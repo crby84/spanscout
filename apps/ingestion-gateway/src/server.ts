@@ -1,9 +1,11 @@
+import { getCachedKey, storeKey } from "./apiKeyCache";
 import "./instrumentation";
 import express, { Request, Response } from "express";
 import axios from "axios";
 import { SpanStatusCode, trace } from "@opentelemetry/api";
 
 const tracer = trace.getTracer("spanscout-ingestion-gateway");
+
 const app = express();
 const port = 3002;
 
@@ -31,14 +33,51 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
           code: SpanStatusCode.ERROR,
           message: "missing API key",
         });
+
         span.setAttribute("spanscout.auth.valid", false);
+        span.setAttribute("spanscout.auth.cache_hit", false);
 
         span.end();
+
         return res.status(401).json({
           error: "missing_api_key",
           message: "x-spanscout-api-key header is required",
         });
       }
+
+      const cached = getCachedKey(apiKey);
+
+      if (cached) {
+        span.setAttribute("spanscout.auth.valid", true);
+        span.setAttribute("spanscout.auth.cache_hit", true);
+        span.setAttribute("spanscout.project.id", cached.projectId);
+        span.setAttribute("spanscout.project.slug", cached.projectSlug);
+        span.setAttribute("spanscout.api_key.prefix", cached.keyPrefix);
+        span.setAttribute("spanscout.ingestion.kind", "traces");
+
+        await axios.post(OTEL_COLLECTOR_TRACES_URL, req.body, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-spanscout-project-id": cached.projectId,
+            "x-spanscout-project-slug": cached.projectSlug,
+            "x-spanscout-api-key-prefix": cached.keyPrefix,
+          },
+          timeout: 5000,
+        });
+
+        span.end();
+
+        return res.status(200).json({
+          accepted: true,
+          project: {
+            id: cached.projectId,
+            slug: cached.projectSlug,
+          },
+          cacheHit: true,
+        });
+      }
+
+      span.setAttribute("spanscout.auth.cache_hit", false);
 
       const validationResponse = await axios.post(
         `${CONTROL_PLANE_URL}/ingestion/validate-key`,
@@ -56,9 +95,11 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
           code: SpanStatusCode.ERROR,
           message: "invalid API key",
         });
+
         span.setAttribute("spanscout.auth.valid", false);
 
         span.end();
+
         return res.status(403).json({
           error: "invalid_api_key",
           message: "API key is invalid",
@@ -67,6 +108,8 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
 
       const project = validationResponse.data.project;
       const keyInfo = validationResponse.data.apiKey;
+
+      storeKey(apiKey, project.id, project.slug, keyInfo.prefix);
 
       span.setAttribute("spanscout.auth.valid", true);
       span.setAttribute("spanscout.project.id", project.id);
@@ -92,12 +135,10 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
           id: project.id,
           slug: project.slug,
         },
+        cacheHit: false,
       });
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        const data = error.response?.data;
-
         span.recordException(error);
         span.setStatus({
           code: SpanStatusCode.ERROR,
@@ -106,14 +147,14 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
 
         span.end();
 
-        return res.status(status ?? 500).json({
+        return res.status(error.response?.status ?? 500).json({
           error: "upstream_error",
-          status,
-          details: data ?? error.message,
+          details: error.response?.data ?? error.message,
         });
       }
 
       const err = error as Error;
+
       span.recordException(err);
       span.setStatus({
         code: SpanStatusCode.ERROR,

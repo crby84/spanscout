@@ -7,7 +7,10 @@ import { resourceFromAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 
 const traceExporter = new OTLPTraceExporter({
-  url: "http://localhost:4320/v1/traces",
+  url: "http://localhost:3002/v1/traces",
+  headers: {
+    "x-spanscout-api-key": "ssc_live_575d8abb615a0f4cbc45e2c0b2c50cdd15b73b81f3ce597b", //Hier kommt der echte API Key rein, am besten über .dotenv!
+  },
 });
 
 const metricExporter = new OTLPMetricExporter({

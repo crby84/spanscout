@@ -7,30 +7,30 @@ import { resourceFromAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 
 const traceExporter = new OTLPTraceExporter({
-  url: "http://localhost:4320/v1/traces",
+    url: "http://localhost:4320/v1/traces",
 });
 
 const metricExporter = new OTLPMetricExporter({
-  url: "http://localhost:4320/v1/metrics",
+    url: "http://localhost:4320/v1/metrics",
 });
 
 const sdk = new NodeSDK({
-  resource: resourceFromAttributes({
-    [ATTR_SERVICE_NAME]: "spanscout-control-plane",
-  }),
-  traceExporter,
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-    exportIntervalMillis: 5000,
-  }),
-  instrumentations: [getNodeAutoInstrumentations()],
+    resource: resourceFromAttributes({
+        [ATTR_SERVICE_NAME]: "spanscout-control-plane",
+    }),
+    traceExporter,
+    metricReader: new PeriodicExportingMetricReader({
+        exporter: metricExporter,
+        exportIntervalMillis: 5000,
+    }),
+    instrumentations: [getNodeAutoInstrumentations()],
 });
 
 sdk.start();
 
 const shutdown = async () => {
-  await sdk.shutdown();
-  process.exit(0);
+    await sdk.shutdown();
+    process.exit(0);
 };
 
 process.on("SIGTERM", shutdown);
