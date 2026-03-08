@@ -1,37 +1,18 @@
 # SpanScout
 
-**SpanScout** ist ein Developer-first **Observability- und Telemetry-Plattform-Prototyp**.
+**SpanScout** ist ein Developer-first **Observability Platform Prototype**.
 
-Das Projekt demonstriert eine **self-hosted Observability Architektur** mit:
+Das Projekt demonstriert eine **self-hosted Telemetry Ingestion Architektur** mit:
 
 * instrumentierten Services
-* einem Telemetry **Ingestion Gateway**
-* einer **Control Plane** für Projekte und API Keys
-* einem vollständigen **OpenTelemetry Observability Stack**
+* einem Telemetry Ingestion Gateway
+* einer Control Plane für Projekte und API Keys
+* einem OpenTelemetry Observability Stack
 
-SpanScout dient als **Platform Engineering / Infrastructure Demo**, um zu zeigen, wie eine kleine Observability-Plattform ähnlich zu Datadog oder Grafana Cloud aufgebaut werden kann.
+Weitere Informationen:
 
----
-
-# Architekturüberblick
-
-High-Level Architektur:
-
-```
-Instrumented Service
-        ↓
-OpenTelemetry SDK
-        ↓
-SpanScout Ingestion Gateway
-        ↓
-Control Plane (API Key Validation)
-        ↓
-OpenTelemetry Collector
-        ↓
-Tempo / Prometheus / Loki
-        ↓
-Grafana
-```
+* Architektur → `docs/architecture.md`
+* Projektvision → `docs/vision.md`
 
 ---
 
@@ -64,6 +45,9 @@ spanscout/
 │       └── provisioning/
 │
 ├── docs/
+│   ├── architecture.md
+│   └── vision.md
+│
 ├── README.md
 └── .gitignore
 ```
@@ -114,18 +98,18 @@ npm install
 
 # Projekt starten
 
-Damit **vollständige Traces sichtbar sind**, müssen alle Komponenten laufen.
+Damit **vollständige Traces sichtbar sind**, müssen alle Services laufen.
 
 ---
 
-## 1. Observability Stack starten
+## 1 Observability Stack starten
 
 ```
 cd infra/docker
 docker compose up -d
 ```
 
-Dies startet:
+Startet:
 
 * Grafana
 * Prometheus
@@ -136,16 +120,14 @@ Dies startet:
 
 ---
 
-## 2. Control Plane starten
+## 2 Control Plane starten
 
 ```
 cd apps/control-plane
 npm run start:dev
 ```
 
-Die Control Plane wird vom Gateway verwendet, um **API Keys zu validieren**.
-
-Standard Port:
+Port:
 
 ```
 localhost:3001
@@ -153,7 +135,7 @@ localhost:3001
 
 ---
 
-## 3. Ingestion Gateway starten
+## 3 Ingestion Gateway starten
 
 ```
 cd apps/ingestion-gateway
@@ -170,7 +152,7 @@ Der Gateway nimmt Telemetrie von Services entgegen und leitet sie an den Observa
 
 ---
 
-## 4. Worker Service starten
+## 4 Worker Service starten
 
 ```
 cd apps/worker-service
@@ -179,14 +161,14 @@ npm run dev
 
 ---
 
-## 5. Demo Service starten
+## 5 Demo Service starten
 
 ```
 cd apps/demo-service
 npm run dev
 ```
 
-Standard Port:
+Port:
 
 ```
 localhost:8080
@@ -196,63 +178,39 @@ localhost:8080
 
 # Services testen
 
-Sobald alle Services laufen, können Testrequests ausgeführt werden.
-
-## Hello Endpoint
+Hello Endpoint
 
 ```
 curl http://localhost:8080/hello
 ```
 
----
-
-## Slow Endpoint (Distributed Trace)
+Distributed Trace erzeugen
 
 ```
 curl http://localhost:8080/slow
 ```
 
-Dieser Request erzeugt einen **Distributed Trace** über mehrere Services.
-
----
-
-## Error Endpoint
-
-```
-curl http://localhost:8080/error
-```
-
----
-
-## Mehrere Traces erzeugen
+Mehrere Traces erzeugen
 
 ```
 for i in {1..5}; do curl http://localhost:8080/slow; done
 ```
 
-Die Traces können anschließend in **Grafana / Tempo** analysiert werden.
-
 ---
 
 # Projekt stoppen
 
-Node Services stoppen:
+Node Services stoppen
 
 ```
 CTRL + C
 ```
 
-Docker Stack stoppen:
+Docker Stack stoppen
 
 ```
 cd infra/docker
 docker compose down
 ```
 
-Die Daten bleiben erhalten, da Docker Volumes verwendet werden.
-
----
-
-# Kurzbeschreibung
-
-SpanScout ist ein **self-hosted Observability Platform Prototype**, der eine vollständige Telemetrie-Pipeline mit Ingestion Gateway, Control Plane, OpenTelemetry und einem Grafana-basierten Observability Stack implementiert.
+Docker Volumes bleiben erhalten, sodass Datenbanken und Dashboards nicht verloren gehen.
