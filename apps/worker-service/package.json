@@ -1,5 +1,5 @@
 {
-  "name": "demo-service",
+  "name": "worker-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,7 +17,6 @@
     "@opentelemetry/exporter-metrics-otlp-http": "^0.213.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
     "@opentelemetry/sdk-node": "^0.213.0",
-    "axios": "^1.13.6",
     "express": "^5.2.1",
     "pino": "^10.3.1"
   },

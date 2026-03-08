@@ -1,6 +1,7 @@
 import "./instrumentation";
 import express from "express";
 import pino from "pino";
+import axios from "axios";
 import { trace, SpanStatusCode } from "@opentelemetry/api";
 
 const app = express();
@@ -29,11 +30,22 @@ app.get("/slow", async (_req, res) => {
     span.end();
   });
 
-  await tracer.startActiveSpan("simulate-db-call", async (span) => {
-    span.setAttribute("db.system", "postgresql");
-    span.setAttribute("db.operation", "SELECT");
-    await sleep(400);
-    span.end();
+  const workerResult = await tracer.startActiveSpan("call-worker-service", async (span) => {
+    try {
+      const response = await axios.get("http://localhost:8081/work");
+      span.setAttribute("worker.http.status_code", response.status);
+      span.end();
+      return response.data;
+    } catch (error) {
+      const err = error as Error;
+      span.recordException(err);
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: err.message,
+      });
+      span.end();
+      throw error;
+    }
   });
 
   await tracer.startActiveSpan("simulate-external-api", async (span) => {
@@ -43,7 +55,10 @@ app.get("/slow", async (_req, res) => {
     span.end();
   });
 
-  res.json({ message: "Slow response complete" });
+  res.json({
+    message: "Slow response complete",
+    workerResult,
+  });
 });
 
 app.get("/error", async (_req, res) => {
