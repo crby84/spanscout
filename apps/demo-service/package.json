@@ -17,6 +17,7 @@
     "@opentelemetry/exporter-metrics-otlp-http": "^0.213.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
     "@opentelemetry/sdk-node": "^0.213.0",
+    "@spanscout/node": "file:../../packages/spanscout-node",
     "axios": "^1.13.6",
     "express": "^5.2.1",
     "pino": "^10.3.1"
