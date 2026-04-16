@@ -1,3 +1,4 @@
+import "dotenv/config"; 
 import "@spanscout/node/register"; //automatischer Import der Initialisierung, damit die Traces auch ohne
 import express from "express";
 import pino from "pino";

@@ -19,6 +19,7 @@
     "@opentelemetry/sdk-node": "^0.213.0",
     "@spanscout/node": "file:../../packages/spanscout-node",
     "axios": "^1.13.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pino": "^10.3.1"
   },
