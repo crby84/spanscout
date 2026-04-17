@@ -27,6 +27,9 @@ spanscout/
 │   ├── control-plane/
 │   └── ingestion-gateway/
 │
+├── packages/
+│   └── spanscout-node/
+│
 ├── infra/
 │   ├── docker/
 │   │   └── docker-compose.yml
@@ -195,6 +198,68 @@ Mehrere Traces erzeugen
 ```
 for i in {1..5}; do curl http://localhost:8080/slow; done
 ```
+
+---
+
+# SpanScout SDK (Service Integration)
+
+SpanScout bietet ein einfaches Node.js SDK zur Integration eigener Services.
+
+---
+
+## 1 Package installieren
+
+```
+npm install @spanscout/node dotenv
+```
+
+---
+
+## 2 Environment konfigurieren
+
+Erstelle eine `.env` Datei:
+
+```
+OTEL_SERVICE_NAME=your-service-name
+SPANSCOUT_API_KEY=your_api_key
+SPANSCOUT_TRACES_ENDPOINT=http://localhost:3002/v1/traces
+```
+
+---
+
+## 3 Instrumentierung aktivieren
+
+Füge am Anfang deiner Anwendung hinzu:
+
+```ts
+import "dotenv/config";
+import "@spanscout/node/register";
+```
+
+---
+
+## 4 Service starten
+
+```
+npm run dev
+```
+
+---
+
+## 5 Trace ansehen
+
+Grafana:
+
+```
+http://localhost:3000
+```
+
+Dort siehst du:
+
+* demo-service
+* worker-service
+* ingestion-gateway
+* control-plane
 
 ---
 
