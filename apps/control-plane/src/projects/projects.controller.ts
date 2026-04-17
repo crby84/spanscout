@@ -16,6 +16,11 @@ export class ProjectsController {
     return this.projectsService.findAll();
   }
 
+  @Get(":id/onboarding")
+    getOnboarding(@Param("id") id: string) {
+      return this.projectsService.getOnboarding(id);
+    }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.projectsService.findOne(id);
