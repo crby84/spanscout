@@ -1,3 +1,5 @@
+<p align="center"> <img src="./assets/logo.png" alt="SpanScout Logo" width="400"/> </p>
+
 # SpanScout
 
 **SpanScout** ist ein Developer-first **Observability Platform Prototype**.
