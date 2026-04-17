@@ -1,4 +1,4 @@
-<p align="center"> <img src="./assets/logo.png" alt="SpanScout Logo" width="400"/> </p>
+<p align="center"> <img src="./assets/logo.png" alt="SpanScout Logo" width="700"/> </p>
 
 # SpanScout
 
