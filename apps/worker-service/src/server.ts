@@ -1,4 +1,5 @@
-import "./instrumentation";
+import "dotenv/config";
+import "@spanscout/node/register";
 import express from "express";
 import pino from "pino";
 import { trace } from "@opentelemetry/api";
