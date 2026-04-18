@@ -2,23 +2,23 @@
 
 # SpanScout
 
-**SpanScout** ist ein Developer-first **Observability Platform Prototype**.
+**SpanScout** is a developer-first **observability platform prototype**.
 
-Das Projekt demonstriert eine **self-hosted Telemetry Ingestion Architektur** mit:
+The project demonstrates a **self-hosted telemetry ingestion architecture** with:
 
-* instrumentierten Services
-* einem Telemetry Ingestion Gateway
-* einer Control Plane für Projekte und API Keys
-* einem OpenTelemetry Observability Stack
+* instrumented services
+* a telemetry ingestion gateway
+* a control plane for projects and API keys
+* an OpenTelemetry observability stack
 
-Weitere Informationen:
+Further information:
 
-* Architektur → `docs/architecture.md`
-* Projektvision → `docs/vision.md`
+* Architecture → `docs/architecture.md`
+* Project vision → `docs/vision.md`
 
 ---
 
-# Repository Struktur
+# Repository Structure
 
 ```
 spanscout/
@@ -59,9 +59,9 @@ spanscout/
 
 ---
 
-# Voraussetzungen
+# Prerequisites
 
-Empfohlene Entwicklungsumgebung:
+Recommended development environment:
 
 ```
 VS Code
@@ -76,14 +76,14 @@ Git
 
 # Installation
 
-Repository klonen:
+Clone the repository:
 
 ```
 git clone <repo-url>
 cd spanscout
 ```
 
-Dependencies installieren:
+Install dependencies:
 
 ```
 cd apps/demo-service
@@ -101,20 +101,20 @@ npm install
 
 ---
 
-# Projekt starten
+# Run the Project
 
-Damit **vollständige Traces sichtbar sind**, müssen alle Services laufen.
+To ensure **complete traces are visible**, all services must be running.
 
 ---
 
-## 1 Observability Stack starten
+## 1 Start Observability Stack
 
 ```
 cd infra/docker
 docker compose up -d
 ```
 
-Startet:
+Starts:
 
 * Grafana
 * Prometheus
@@ -125,7 +125,7 @@ Startet:
 
 ---
 
-## 2 Control Plane starten
+## 2 Start Control Plane
 
 ```
 cd apps/control-plane
@@ -140,7 +140,7 @@ localhost:3001
 
 ---
 
-## 3 Ingestion Gateway starten
+## 3 Start Ingestion Gateway
 
 ```
 cd apps/ingestion-gateway
@@ -153,11 +153,11 @@ Port:
 localhost:3002
 ```
 
-Der Gateway nimmt Telemetrie von Services entgegen und leitet sie an den Observability Stack weiter.
+The gateway receives telemetry from services and forwards it to the observability stack.
 
 ---
 
-## 4 Worker Service starten
+## 4 Start Worker Service
 
 ```
 cd apps/worker-service
@@ -166,7 +166,7 @@ npm run dev
 
 ---
 
-## 5 Demo Service starten
+## 5 Start Demo Service
 
 ```
 cd apps/demo-service
@@ -181,21 +181,21 @@ localhost:8080
 
 ---
 
-# Services testen
+# Test the Services
 
-Hello Endpoint
+Hello endpoint
 
 ```
 curl http://localhost:8080/hello
 ```
 
-Distributed Trace erzeugen
+Generate a distributed trace
 
 ```
 curl http://localhost:8080/slow
 ```
 
-Mehrere Traces erzeugen
+Generate multiple traces
 
 ```
 for i in {1..5}; do curl http://localhost:8080/slow; done
@@ -205,11 +205,11 @@ for i in {1..5}; do curl http://localhost:8080/slow; done
 
 # SpanScout SDK (Service Integration)
 
-SpanScout bietet ein einfaches Node.js SDK zur Integration eigener Services.
+SpanScout provides a simple Node.js SDK for integrating your own services.
 
 ---
 
-## 1 Package installieren
+## 1 Install Package
 
 ```
 npm install @spanscout/node dotenv
@@ -217,9 +217,9 @@ npm install @spanscout/node dotenv
 
 ---
 
-## 2 Environment konfigurieren
+## 2 Configure Environment
 
-Erstelle eine `.env` Datei:
+Create a `.env` file:
 
 ```
 OTEL_SERVICE_NAME=your-service-name
@@ -229,9 +229,9 @@ SPANSCOUT_TRACES_ENDPOINT=http://localhost:3002/v1/traces
 
 ---
 
-## 3 Instrumentierung aktivieren
+## 3 Enable Instrumentation
 
-Füge am Anfang deiner Anwendung hinzu:
+Add this at the top of your application:
 
 ```ts
 import "dotenv/config";
@@ -240,7 +240,7 @@ import "@spanscout/node/register";
 
 ---
 
-## 4 Service starten
+## 4 Start Service
 
 ```
 npm run dev
@@ -248,7 +248,7 @@ npm run dev
 
 ---
 
-## 5 Trace ansehen
+## 5 View Trace
 
 Grafana:
 
@@ -256,7 +256,7 @@ Grafana:
 http://localhost:3000
 ```
 
-Dort siehst du:
+There you will see:
 
 * demo-service
 * worker-service
@@ -265,19 +265,19 @@ Dort siehst du:
 
 ---
 
-# Projekt stoppen
+# Stop the Project
 
-Node Services stoppen
+Stop Node services
 
 ```
 CTRL + C
 ```
 
-Docker Stack stoppen
+Stop Docker stack
 
 ```
 cd infra/docker
 docker compose down
 ```
 
-Docker Volumes bleiben erhalten, sodass Datenbanken und Dashboards nicht verloren gehen.
+Docker volumes are preserved so that databases and dashboards are not lost.
