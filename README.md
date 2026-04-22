@@ -281,3 +281,44 @@ docker compose down
 ```
 
 Docker volumes are preserved so that databases and dashboards are not lost.
+
+# Unorganized Additions
+🔐 API Key Authentication & Revocation
+
+SpanScout uses API keys to authenticate telemetry ingestion requests.
+
+Each request to the ingestion gateway must include a valid API key:
+
+x-spanscout-api-key: <your_api_key>
+API Key States
+
+API keys can exist in two states:
+
+Active → requests are accepted
+Revoked → requests are rejected
+Revocation Behavior
+
+When an API key is revoked:
+
+Requests are rejected with 403 Forbidden
+The gateway returns:
+{
+  "error": "revoked_api_key",
+  "message": "API key has been revoked"
+}
+
+Invalid API keys are handled separately:
+
+{
+  "error": "invalid_api_key",
+  "message": "API key is invalid"
+}
+Example
+curl -X POST http://localhost:3002/v1/traces \
+  -H "Content-Type: application/json" \
+  -H "x-spanscout-api-key: <your_api_key>" \
+  -d '{}'
+Notes
+API key validation is performed via the control plane
+Results are cached in the ingestion gateway for performance
+Revocation is enforced at the gateway level

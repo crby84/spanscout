@@ -48,6 +48,7 @@ Funktionen:
 * Telemetry Enrichment
 * Weiterleitung an OpenTelemetry Collector
 * API Key Caching
+* Enforces API key revocation
 
 Endpoint:
 
