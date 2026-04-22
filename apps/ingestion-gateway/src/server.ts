@@ -48,6 +48,22 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
       const cached = getCachedKey(apiKey);
 
       if (cached) {
+        if (cached.revokedAt) {
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: "revoked API key",
+          });
+
+          span.setAttribute("spanscout.auth.valid", false);
+          span.setAttribute("spanscout.auth.cache_hit", true);
+
+          span.end();
+
+          return res.status(403).json({
+            error: "revoked_api_key",
+            message: "API key has been revoked",
+          });
+        }
         span.setAttribute("spanscout.auth.valid", true);
         span.setAttribute("spanscout.auth.cache_hit", true);
         span.setAttribute("spanscout.project.id", cached.projectId);
@@ -109,7 +125,23 @@ app.post("/v1/traces", async (req: Request, res: Response) => {
       const project = validationResponse.data.project;
       const keyInfo = validationResponse.data.apiKey;
 
-      storeKey(apiKey, project.id, project.slug, keyInfo.prefix);
+      if (keyInfo.revokedAt) {
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: "revoked API key",
+        });
+
+        span.setAttribute("spanscout.auth.valid", false);
+
+        span.end();
+
+        return res.status(403).json({
+          error: "revoked_api_key",
+          message: "API key has been revoked",
+        });
+      }
+
+      storeKey(apiKey, project.id, project.slug, keyInfo.prefix, keyInfo.revokedAt);
 
       span.setAttribute("spanscout.auth.valid", true);
       span.setAttribute("spanscout.project.id", project.id);

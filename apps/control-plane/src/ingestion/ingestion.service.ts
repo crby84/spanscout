@@ -12,7 +12,6 @@ export class IngestionService {
     const apiKeyRecord = await this.prisma.apiKey.findFirst({
       where: {
         keyHash,
-        revokedAt: null,
       },
       include: {
         project: true,
@@ -34,6 +33,7 @@ export class IngestionService {
         id: apiKeyRecord.id,
         name: apiKeyRecord.name,
         prefix: apiKeyRecord.prefix,
+        revokedAt: apiKeyRecord.revokedAt,
       },
     };
   }
