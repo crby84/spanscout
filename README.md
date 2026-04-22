@@ -322,3 +322,21 @@ Notes
 API key validation is performed via the control plane
 Results are cached in the ingestion gateway for performance
 Revocation is enforced at the gateway level
+
+## Development
+
+Start all services:
+
+```
+./start-dev.sh
+```
+
+Stop all services:
+```
+./stop-dev.sh
+```
+
+Restart everything:
+```
+./restart-dev.sh
+```
