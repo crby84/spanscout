@@ -1,24 +1,24 @@
-<p align="center"> <img src="./assets/logo.png" alt="SpanScout Logo" width="800" style="border-radius: 12px;"/> </p>
-
 # SpanScout
 
 **SpanScout** is a developer-first **observability platform prototype**.
 
-The project demonstrates a **self-hosted telemetry ingestion architecture** with:
+It demonstrates a **self-hosted telemetry ingestion architecture** with:
 
 * instrumented services
 * a telemetry ingestion gateway
 * a control plane for projects and API keys
-* an OpenTelemetry observability stack
-
-Further information:
-
-* Architecture → `docs/architecture.md`
-* Project vision → `docs/vision.md`
+* an OpenTelemetry-based observability stack
 
 ---
 
-# Repository Structure
+## 📚 Documentation
+
+* Architecture → `docs/architecture.md`
+* Project Vision → `docs/vision.md`
+
+---
+
+## 🧱 Repository Structure
 
 ```
 spanscout/
@@ -34,194 +34,192 @@ spanscout/
 │
 ├── infra/
 │   ├── docker/
-│   │   └── docker-compose.yml
-│   │
 │   ├── otel/
-│   │   └── otel-collector-config.yaml
-│   │
 │   ├── prometheus/
-│   │   └── prometheus.yml
-│   │
 │   ├── tempo/
-│   │   └── tempo.yaml
-│   │
 │   └── grafana/
-│       ├── dashboards/
-│       └── provisioning/
 │
 ├── docs/
-│   ├── architecture.md
-│   └── vision.md
-│
+├── assets/
 ├── README.md
-└── .gitignore
 ```
 
 ---
 
-# Prerequisites
+## ⚙️ Prerequisites
 
-Recommended development environment:
+Recommended environment:
 
-```
-VS Code
-WSL
-Docker Desktop
-Node.js
-npm
-Git
-```
+* VS Code
+* WSL
+* Docker Desktop
+* Node.js
+* npm
+* Git
 
 ---
 
-# Installation
+## 📦 Installation
 
-Clone the repository:
-
-```
+```bash
 git clone <repo-url>
 cd spanscout
 ```
 
 Install dependencies:
 
-```
-cd apps/demo-service
-npm install
-
-cd ../worker-service
-npm install
-
-cd ../ingestion-gateway
-npm install
-
-cd ../control-plane
-npm install
+```bash
+cd apps/demo-service && npm install
+cd ../worker-service && npm install
+cd ../ingestion-gateway && npm install
+cd ../control-plane && npm install
 ```
 
 ---
 
-# Run the Project
+## 🚀 Run the Project
 
-To ensure **complete traces are visible**, all services must be running.
+To see **complete distributed traces**, all services must be running.
 
 ---
 
-## 1 Start Observability Stack
+### 1. Start Observability Stack
 
-```
+```bash
 cd infra/docker
 docker compose up -d
 ```
 
-Starts:
-
-* Grafana
-* Prometheus
-* Tempo
-* Loki
-* OpenTelemetry Collector
-* PostgreSQL
-
 ---
 
-## 2 Start Control Plane
+### 2. Start Services (Manual)
 
-```
-cd apps/control-plane
-npm run start:dev
-```
-
-Port:
-
-```
-localhost:3001
+```bash
+cd apps/control-plane && npm run start:dev
+cd apps/ingestion-gateway && npm run dev
+cd apps/worker-service && npm run dev
+cd apps/demo-service && npm run dev
 ```
 
 ---
 
-## 3 Start Ingestion Gateway
+### 3. Start Services (Recommended)
 
-```
-cd apps/ingestion-gateway
-npm run dev
-```
+Using tmux-based dev scripts:
 
-Port:
-
-```
-localhost:3002
+```bash
+./start-dev.sh
 ```
 
-The gateway receives telemetry from services and forwards it to the observability stack.
+Stop:
+
+```bash
+./stop-dev.sh
+```
+
+Restart:
+
+```bash
+./restart-dev.sh
+```
+
+> Requires: `tmux`
 
 ---
 
-## 4 Start Worker Service
+## 🧪 Test the System
 
-```
-cd apps/worker-service
-npm run dev
-```
-
----
-
-## 5 Start Demo Service
-
-```
-cd apps/demo-service
-npm run dev
-```
-
-Port:
-
-```
-localhost:8080
-```
-
----
-
-# Test the Services
-
-Hello endpoint
-
-```
+```bash
 curl http://localhost:8080/hello
 ```
 
-Generate a distributed trace
-
-```
+```bash
 curl http://localhost:8080/slow
 ```
 
-Generate multiple traces
+Multiple requests:
 
-```
+```bash
 for i in {1..5}; do curl http://localhost:8080/slow; done
 ```
 
 ---
 
-# SpanScout SDK (Service Integration)
+## 🔐 API Key Authentication & Revocation
 
-SpanScout provides a simple Node.js SDK for integrating your own services.
+SpanScout uses API keys to authenticate ingestion requests.
+
+### Required Header
+
+```bash
+x-spanscout-api-key: <your_api_key>
+```
 
 ---
 
-## 1 Install Package
+### API Key States
 
+| State   | Behavior         |
+| ------- | ---------------- |
+| Active  | Request accepted |
+| Revoked | Request rejected |
+
+---
+
+### Error Responses
+
+#### Revoked Key
+
+```json
+{
+  "error": "revoked_api_key",
+  "message": "API key has been revoked"
+}
 ```
+
+#### Invalid Key
+
+```json
+{
+  "error": "invalid_api_key",
+  "message": "API key is invalid"
+}
+```
+
+---
+
+### Example Request
+
+```bash
+curl -X POST http://localhost:3002/v1/traces \
+  -H "Content-Type: application/json" \
+  -H "x-spanscout-api-key: <your_api_key>" \
+  -d '{}'
+```
+
+---
+
+### Notes
+
+* Validation is performed via the Control Plane
+* Results are cached in the Ingestion Gateway (TTL: 60s)
+* Revocation is enforced at the gateway level
+
+---
+
+## 🧩 SpanScout SDK (Service Integration)
+
+### 1. Install
+
+```bash
 npm install @spanscout/node dotenv
 ```
 
 ---
 
-## 2 Configure Environment
+### 2. Configure
 
-Create a `.env` file:
-
-```
+```env
 OTEL_SERVICE_NAME=your-service-name
 SPANSCOUT_API_KEY=your_api_key
 SPANSCOUT_TRACES_ENDPOINT=http://localhost:3002/v1/traces
@@ -229,9 +227,7 @@ SPANSCOUT_TRACES_ENDPOINT=http://localhost:3002/v1/traces
 
 ---
 
-## 3 Enable Instrumentation
-
-Add this at the top of your application:
+### 3. Enable Instrumentation
 
 ```ts
 import "dotenv/config";
@@ -240,15 +236,15 @@ import "@spanscout/node/register";
 
 ---
 
-## 4 Start Service
+### 4. Run
 
-```
+```bash
 npm run dev
 ```
 
 ---
 
-## 5 View Trace
+### 5. View Traces
 
 Grafana:
 
@@ -256,87 +252,44 @@ Grafana:
 http://localhost:3000
 ```
 
-There you will see:
+---
 
-* demo-service
-* worker-service
-* ingestion-gateway
-* control-plane
+## 🧠 Services Overview
+
+* **demo-service** → generates example traces
+* **worker-service** → simulates downstream processing
+* **ingestion-gateway** → validates and forwards telemetry
+* **control-plane** → manages projects and API keys
 
 ---
 
-# Stop the Project
+## 🛑 Stop the Project
 
-Stop Node services
+Stop tmux/dev services:
 
+```bash
+./stop-dev.sh
 ```
+
+Or manually:
+
+```bash
 CTRL + C
 ```
 
-Stop Docker stack
+Stop infrastructure:
 
-```
+```bash
 cd infra/docker
 docker compose down
 ```
 
-Docker volumes are preserved so that databases and dashboards are not lost.
+---
 
-# Unorganized Additions
-🔐 API Key Authentication & Revocation
+## 📌 Notes
 
-SpanScout uses API keys to authenticate telemetry ingestion requests.
+* Docker volumes are preserved (databases and dashboards persist)
+* API keys are stored securely (hashed + prefix)
+* Revocation is enforced in real-time (subject to cache TTL)
 
-Each request to the ingestion gateway must include a valid API key:
-
-x-spanscout-api-key: <your_api_key>
-API Key States
-
-API keys can exist in two states:
-
-Active → requests are accepted
-Revoked → requests are rejected
-Revocation Behavior
-
-When an API key is revoked:
-
-Requests are rejected with 403 Forbidden
-The gateway returns:
-{
-  "error": "revoked_api_key",
-  "message": "API key has been revoked"
-}
-
-Invalid API keys are handled separately:
-
-{
-  "error": "invalid_api_key",
-  "message": "API key is invalid"
-}
-Example
-curl -X POST http://localhost:3002/v1/traces \
-  -H "Content-Type: application/json" \
-  -H "x-spanscout-api-key: <your_api_key>" \
-  -d '{}'
-Notes
-API key validation is performed via the control plane
-Results are cached in the ingestion gateway for performance
-Revocation is enforced at the gateway level
-
-## Development
-
-Start all services:
-
-```
-./start-dev.sh
-```
-
-Stop all services:
-```
-./stop-dev.sh
-```
-
-Restart everything:
-```
-./restart-dev.sh
-```
+---

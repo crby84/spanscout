@@ -43,4 +43,4 @@ Validates API keys
 
 - API keys are stored as hashes
 - Supports revocation via revokedAt
-```
+

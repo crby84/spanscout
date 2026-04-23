@@ -35,4 +35,4 @@ Triggers a distributed trace
 
 - Uses SpanScout Node SDK
 - Sends traces to ingestion gateway
-```
+

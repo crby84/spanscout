@@ -31,4 +31,4 @@ Simulates processing and returns a response.
 ## Notes
 
 - Uses OpenTelemetry directly
-```
+
