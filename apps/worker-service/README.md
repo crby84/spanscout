@@ -1,4 +1,3 @@
-```md
 # Worker Service
 
 ## Overview

@@ -1,4 +1,3 @@
-```md
 # Demo Service
 
 ## Overview

@@ -1,4 +1,3 @@
-```md
 # Control Plane
 
 ## Overview
